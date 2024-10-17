@@ -1,0 +1,79 @@
+Claro, puedo proporcionarte un ejemplo de cómo crear una tabla editable en Reflex donde puedes hacer clic en una fila para editar el registro en un formulario y luego volver a la tabla.
+
+Primero, definimos un estado que contenga los datos de la tabla y un usuario actual para editar:
+
+python
+class State(rx.State):
+    """El estado de la aplicación."""
+    users: list[Customer] = []
+    current_user: Customer = Customer()
+
+    def get_user(self, user: Customer):
+        self.current_user = user
+1
+
+Luego, creamos una función para mostrar cada cliente en una fila de la tabla:
+
+python
+def show_customer(user: Customer):
+    """Muestra un cliente en una fila de la tabla."""
+    return rx.table.row(
+        rx.table.cell(user.name),
+        rx.table.cell(user.email),
+        rx.table.cell(user.phone),
+        rx.table.cell(user.address),
+        rx.table.cell(user.payments),
+        rx.table.cell(user.date),
+        rx.table.cell(
+            rx.hstack(
+                update_customer_dialog(user),
+                rx.icon_button(
+                    rx.icon("trash-2"),
+                    on_click=lambda: State.delete_customer(getattr(user, "id"))
+                )
+            )
+        )
+    )
+Ahora, creamos un diálogo para editar el usuario:
+
+python
+def update_customer_dialog(user):
+    return rx.dialog(
+        rx.dialog.trigger(
+            rx.button(
+                rx.text("Edit"),
+                size="3",
+                on_click=lambda: State.get_user(user)
+            )
+        ),
+        rx.form(
+            rx.vstack(
+                rx.form_field(
+                    "Email",
+                    "user@reflex.dev",
+                    "email",
+                    "email",
+                    default_value=user.email
+                ),
+                # Agrega más campos aquí
+                rx.button("Actualizar", type="submit")
+            ),
+            on_submit=State.update_customer_to_db,
+            reset_on_submit=False
+        )
+    )
+Finalmente, creamos la función para actualizar el usuario en la base de datos:
+
+python
+def update_customer_to_db(self, form_data: dict):
+    self.current_user.update(form_data)
+    with rx.session() as session:
+        customer = session.exec(select(Customer).where(Customer.id == self.current_user["id"])).first()
+        for field in Customer.get_fields():
+            if field != "id":
+                setattr(customer, field, self.current_user[field])
+        session.add(customer)
+        session.commit()
+    self.load_entries()
+    rx.window_alert(f"User {self.current_user['name']} has been modified.")
+Este ejemplo te permite hacer clic en el botón "Edit" en una fila de la tabla para abrir un diálogo con un formulario para editar el registro. Una vez que se envía el formulario, se actualiza la base de datos y se vuelve a cargar la tabla.

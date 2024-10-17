@@ -45,7 +45,7 @@ column_defs = [
 @rx.page(route="/page08", title="page08")
 def page08():
     return rx.vstack(
-            rx.heading("ag grid el order es default pero se puede s=deartivar en las columnas"),
+            rx.heading("ag grid el Edicion"),
             ag_grid(
                 id="ag_grid_basic_headers",
                 row_data=AGGridEditingState.data,
