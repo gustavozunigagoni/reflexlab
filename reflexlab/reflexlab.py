@@ -4,7 +4,7 @@ import reflex as rx
 from reflexlab.backend.loadenv import settings
 from reflexlab.pages.index import index
 import reflexlab.style as style
-#from reflexlab.pages.page01 import page01
+from reflexlab.pages.page01 import page01
 #from reflexlab.pages.page02 import page02
 #from reflexlab.pages.page03 import page03
 #from reflexlab.pages.page04 import page04
@@ -31,7 +31,7 @@ class State(rx.State):
 app = rx.App(style=style.style)
 
 app.add_page(index)
-#app.add_page(page01)
+app.add_page(page01)
 #app.add_page(page02)
 #app.add_page(page03)
 #app.add_page(page04)
