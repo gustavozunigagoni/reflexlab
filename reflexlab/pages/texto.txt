@@ -1,79 +1,95 @@
-Claro, puedo proporcionarte un ejemplo de cómo crear una tabla editable en Reflex donde puedes hacer clic en una fila para editar el registro en un formulario y luego volver a la tabla.
+Claro, aquí tienes la respuesta en español:
 
-Primero, definimos un estado que contenga los datos de la tabla y un usuario actual para editar:
+Para agregar una columna con un diálogo que contenga un formulario para cada fila en tu tabla, puedes modificar tu código existente. Aquí te explico cómo puedes hacerlo:
+
+Primero, necesitas añadir una nueva columna al encabezado y al cuerpo de tu tabla.
+
+En la nueva columna, añadirás un botón que abra un diálogo.
+
+Dentro del diálogo, crearás un formulario con los datos del jugador.
+
+Aquí tienes un ejemplo de cómo puedes modificar tu función show_player para incluir el diálogo:
 
 python
-class State(rx.State):
-    """El estado de la aplicación."""
-    users: list[Customer] = []
-    current_user: Customer = Customer()
-
-    def get_user(self, user: Customer):
-        self.current_user = user
+def show_player(user: Players):
+    """Muestra un jugador en una fila de la tabla."""
+    return rx.table.row(
+        rx.table.cell(user.Name),
+        rx.table.cell(user.Team),
+        rx.table.cell(user.Number),
+        rx.table.cell(user.Position),
+        rx.table.cell(user.Age),
+        rx.table.cell(user.Height),
+        rx.table.cell(user.Weight),
+        rx.table.cell(user.College),
+        rx.table.cell(user.Salary),
+        rx.table.cell(
+            rx.dialog.root(
+                rx.dialog.trigger(rx.button("Editar")),
+                rx.dialog.content(
+                    rx.dialog.title("Editar Jugador"),
+                    rx.dialog.description(
+                        rx.form(
+                            rx.vstack(
+                                rx.input(placeholder="Nombre", name="name", value=user.Name),
+                                rx.input(placeholder="Equipo", name="team", value=user.Team),
+                                rx.input(placeholder="Número", name="number", value=user.Number),
+                                rx.input(placeholder="Posición", name="position", value=user.Position),
+                                rx.input(placeholder="Edad", name="age", value=user.Age),
+                                rx.input(placeholder="Altura", name="height", value=user.Height),
+                                rx.input(placeholder="Peso", name="weight", value=user.Weight),
+                                rx.input(placeholder="Universidad", name="college", value=user.College),
+                                rx.input(placeholder="Salario", name="salary", value=user.Salary),
+                                rx.button("Enviar", type="submit"),
+                            ),
+                            on_submit=lambda form_data: DatabaseTableState.update_player(user.id, form_data),
+                        ),
+                    ),
+                    rx.dialog.close(rx.button("Cerrar")),
+                ),
+            )
+        )
+    )
 1
 
-Luego, creamos una función para mostrar cada cliente en una fila de la tabla:
+Este código añade una nueva celda a cada fila con un botón "Editar". Cuando se hace clic en él, se abre un diálogo que contiene un formulario prellenado con los datos actuales del jugador.
+
+También necesitarás añadir un nuevo método a tu DatabaseTableState para manejar la actualización del jugador:
 
 python
-def show_customer(user: Customer):
-    """Muestra un cliente en una fila de la tabla."""
-    return rx.table.row(
-        rx.table.cell(user.name),
-        rx.table.cell(user.email),
-        rx.table.cell(user.phone),
-        rx.table.cell(user.address),
-        rx.table.cell(user.payments),
-        rx.table.cell(user.date),
-        rx.table.cell(
-            rx.hstack(
-                update_customer_dialog(user),
-                rx.icon_button(
-                    rx.icon("trash-2"),
-                    on_click=lambda: State.delete_customer(getattr(user, "id"))
-                )
-            )
-        )
-    )
-Ahora, creamos un diálogo para editar el usuario:
+class DatabaseTableState(rx.State):
+    # ... código existente ...
+
+    def update_player(self, player_id: int, form_data: dict):
+        with Session(engine) as session:
+            player = session.get(Players, player_id)
+            for key, value in form_data.items():
+                setattr(player, key.capitalize(), value)
+            session.commit()
+        self.load_entries()
+Este método actualiza al jugador en la base de datos con los nuevos datos del formulario y luego recarga las entradas de la tabla.
+
+Finalmente, no olvides añadir la nueva columna al encabezado de tu tabla en la función table02:
 
 python
-def update_customer_dialog(user):
-    return rx.dialog(
-        rx.dialog.trigger(
-            rx.button(
-                rx.text("Edit"),
-                size="3",
-                on_click=lambda: State.get_user(user)
-            )
+rx.table.root(
+    rx.table.header(
+        rx.table.row(
+            rx.table.column_header_cell("Nombre"),
+            rx.table.column_header_cell("Equipo"),
+            rx.table.column_header_cell("Número"),
+            rx.table.column_header_cell("Posición"),
+            rx.table.column_header_cell("Edad"),
+            rx.table.column_header_cell("Altura"),
+            rx.table.column_header_cell("Peso"),
+            rx.table.column_header_cell("Universidad"),
+            rx.table.column_header_cell("Salario"),
+            rx.table.column_header_cell("Acciones"),  # Nueva columna
         ),
-        rx.form(
-            rx.vstack(
-                rx.form_field(
-                    "Email",
-                    "user@reflex.dev",
-                    "email",
-                    "email",
-                    default_value=user.email
-                ),
-                # Agrega más campos aquí
-                rx.button("Actualizar", type="submit")
-            ),
-            on_submit=State.update_customer_to_db,
-            reset_on_submit=False
-        )
-    )
-Finalmente, creamos la función para actualizar el usuario en la base de datos:
+    ),
+    # ... resto del código de la tabla ...
+)
+2
 
-python
-def update_customer_to_db(self, form_data: dict):
-    self.current_user.update(form_data)
-    with rx.session() as session:
-        customer = session.exec(select(Customer).where(Customer.id == self.current_user["id"])).first()
-        for field in Customer.get_fields():
-            if field != "id":
-                setattr(customer, field, self.current_user[field])
-        session.add(customer)
-        session.commit()
-    self.load_entries()
-    rx.window_alert(f"User {self.current_user['name']} has been modified.")
-Este ejemplo te permite hacer clic en el botón "Edit" en una fila de la tabla para abrir un diálogo con un formulario para editar el registro. Una vez que se envía el formulario, se actualiza la base de datos y se vuelve a cargar la tabla.
+Esta implementación añade un botón "Editar" para cada fila, que abre un diálogo con un formulario que contiene los datos actuales del jugador. Cuando se envía, actualiza la información del jugador en la base de datos y refresca la tabla.
+
