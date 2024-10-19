@@ -2,11 +2,12 @@ import reflex as rx
 import csv
 import io
 import json
-from sqlmodel import select,Field, Session, create_engine, asc, or_, func
+from sqlmodel import select,Field, Session, create_engine, asc, or_, func, SQLModel
 
 
 #  Configuracion de base de datos
-DATABASE_URL= "mssql+pyodbc://rxuseradquirencias:rxUserAdquirenciaTarjetasPasswrd#01@crsjce010440vm.daviviendacr.com/AdquirenciaTarjetas?driver=ODBC+Driver+17+for+SQL+Server"
+#DATABASE_URL= "mssql+pyodbc://rxuseradquirencias:rxUserAdquirenciaTarjetasPasswrd#01@crsjce010440vm.daviviendacr.com/AdquirenciaTarjetas?driver=ODBC+Driver+17+for+SQL+Server"
+DATABASE_URL= "postgresql://postgres:GzgAdoZu2@192.168.100.45:5432/bancogzg"
 engine = create_engine(DATABASE_URL,echo=True)
 
 # Funcion para obtener una session de base de datos
@@ -17,11 +18,11 @@ def get_session():
 # Modelo de players
 class Players(rx.Model, table=True):
     Name: str
-    Team: str 
+    Team: str
     Number: float
-    Position: str 
+    Position: str
     Age: float
-    Height: str 
+    Height: str
     Weight: float
     College: str
     Salary: float
@@ -82,9 +83,7 @@ class DatabaseTableState(rx.State):
                     or_(
                         Players.Name.ilike(search_value),
                         Players.Team.ilike(search_value),
-                        Players.Number.ilike(search_value),
                         Players.Position.ilike(search_value),
-                        Players.Age.ilike(search_value),
                     )
                 )
 
@@ -93,7 +92,7 @@ class DatabaseTableState(rx.State):
                 sort_column = getattr(Players, self.sort_value)
             else:
                 # Ordenar por Team por defecto si no se especifica un valor de ordenación
-                sort_column = Players.Team
+                sort_column = Players.id
             order = asc(sort_column)
             query = query.order_by(order)
 
@@ -106,10 +105,11 @@ class DatabaseTableState(rx.State):
     def update_player(self, form_data: dict):
         with Session(engine) as session:
             player = session.get(Players, form_data["id"])
-            for key, value in form_data.items():
-                if key != "id":
-                    setattr(player, key.capitalize(), value)
-            session.commit()
+            if player:
+                for key, value in form_data.items():
+                    if key != "id":
+                        setattr(player, key.capitalize(), value)
+                session.commit()
         self.load_entries()
     
     def sort_values(self, sort_value):
@@ -168,6 +168,7 @@ def show_player(user: Players):
                                     type="hidden",
                                     name="id",
                                     value=user.id,
+                                    readonly=True
                                 ),
                                 rx.form.field(
                                     rx.flex(
@@ -216,6 +217,7 @@ def show_player(user: Players):
         rx.table.cell(user.Weight),
         rx.table.cell(user.College),
         rx.table.cell(user.Salary),
+        rx.table.cell(user.id),
     )
 
 @rx.page(route="/table02", title="table02")
@@ -255,11 +257,11 @@ def table02():
             spacing="7",
         ),
         rx.select(
-            ["Name","Team", "Number", "Position", "Age"],
+            ["id","Name","Team", "Position"],
             placeholder="Ordenado por: Team",
             on_change=lambda value: DatabaseTableState.sort_values(
                 value
-            ),default_value="Name"
+            ),default_value="id"
         ),
         rx.input(
             placeholder="Search here...",
@@ -280,6 +282,7 @@ def table02():
                     rx.table.column_header_cell("Weight"),
                     rx.table.column_header_cell("College"),
                     rx.table.column_header_cell("Salary"),
+                    rx.table.column_header_cell("id"),
                 ),
             ),
             rx.table.body(

@@ -15,8 +15,11 @@ from reflexlab.pages.page01 import page01
 #from reflexlab.pages.page09 import page09
 #from reflexlab.pages.page10 import page10
 #from reflexlab.pages.page11 import page11
-from reflexlab.pages.table01 import table01
-from reflexlab.pages.employee_page import employee_page
+#from reflexlab.pages.table01 import table01
+#from reflexlab.pages.employee_page import employee_page
+from reflexlab.pages.table02 import table02
+from reflexlab.pages.form01 import form01
+from reflexlab.pages.form02 import form02
 
 from rxconfig import config
 
@@ -28,7 +31,8 @@ class State(rx.State):
     ...
 
 
-app = rx.App(style=style.style)
+#app = rx.App(style=style.style)
+app = rx.App()
 
 app.add_page(index)
 app.add_page(page01)
@@ -42,5 +46,8 @@ app.add_page(page01)
 #app.add_page(page09)
 #app.add_page(page10)
 #app.add_page(page11)
-app.add_page(table01)
-app.add_page(employee_page)
+#app.add_page(table01)
+#app.add_page(employee_page)
+app.add_page(table02)
+app.add_page(form01)
+app.add_page(form02)
