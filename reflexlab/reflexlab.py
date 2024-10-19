@@ -17,7 +17,7 @@ from reflexlab.pages.page01 import page01
 #from reflexlab.pages.page11 import page11
 #from reflexlab.pages.table01 import table01
 #from reflexlab.pages.employee_page import employee_page
-from reflexlab.pages.table02 import table02
+from reflexlab.pages.page12.page12 import page12
 from reflexlab.pages.form01 import form01
 from reflexlab.pages.form02 import form02
 
@@ -48,6 +48,6 @@ app.add_page(page01)
 #app.add_page(page11)
 #app.add_page(table01)
 #app.add_page(employee_page)
-app.add_page(table02)
+app.add_page(page12)
 app.add_page(form01)
 app.add_page(form02)

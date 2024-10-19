@@ -8,8 +8,8 @@ from reflexlab.pages.page12.page12_state import DatabaseTableState
 from reflexlab.pages.page12.page12_showrows import show_player
 
 
-@rx.page(route="/table02", title="table02")
-def table02():
+@rx.page(route="/page12", title="page12")
+def page12():
     return rx.vstack(
         rx.hstack(
             rx.select(
