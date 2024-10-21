@@ -1,5 +1,7 @@
 import reflex as rx
 from sqlmodel import select, Session, asc, or_, func
+from sqlalchemy.exc import IntegrityError
+import re
 import json
 import csv
 import io
@@ -16,6 +18,12 @@ class DatabaseTableState(rx.State):
     total_items: int
     offset: int = 0
     limit: int = 10
+
+    error_message: str = ""
+
+    @rx.var
+    def has_error(self) -> bool:
+        return self.error_message != ""
 
     def update_limit(self, new_limit: str):
         self.limit = int(new_limit)
@@ -83,13 +91,34 @@ class DatabaseTableState(rx.State):
     
     def update_player(self, form_data: dict):
         with Session(engine) as session:
-            player = session.get(Players, form_data["id"])
-            if player:
-                for key, value in form_data.items():
-                    if key != "id":
-                        setattr(player, key.capitalize(), value)
-                session.commit()
-        self.load_entries()
+            try:
+                player = session.get(Players, form_data["id"])
+                if player:
+                    new_name = form_data.get("name", "").strip()
+                    if re.match(r'^\s*$', new_name):
+                        self.error_message = "Error: El campo nombre no puede estar vacío o contener solo espacios."
+                    else:
+                        existing_player = session.exec(
+                        select(Players).where(
+                            Players.Name == new_name,
+                            Players.id != player.id
+                        )
+                        ).first()
+                        if existing_player:
+                            self.error_message = f"Error: Ya existe un jugador con el nombre '{new_name}'."
+                        else:
+                            for key, value in form_data.items():
+                                if key != "id":
+                                    setattr(player, key.capitalize(), value)
+                            session.commit()
+                            self.load_entries()
+                            self.error_message = "" 
+                else:
+                    self.error_message = "Error: El jugador no existe en la base de datos."
+            except IntegrityError as e:
+                session.rollback()
+                self.error_message = f"Error de base de datos: {str(e)}"
+
 
     def delete_player(self, player_id: int):
         with Session(engine) as session:
