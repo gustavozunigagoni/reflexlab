@@ -30,14 +30,17 @@ def show_player(user: Players):
 
 def _editrow(user: Players, action: str = "edit") -> rx.Component:
     if action == "edit":
-        txtbtndialog= "Editar"
+        txtbtndialog= "pencil"
         txttitledialog= "Ediat Player"
     else:
-        txtbtndialog= "Adicionar"
+        txtbtndialog= "circle-plus"
         txttitledialog= "Adicionar Player"
 
     return rx.dialog.root(
-                rx.dialog.trigger(rx.button(txtbtndialog)),
+                rx.dialog.trigger(rx.button(
+                    rx.icon(txtbtndialog)
+                    )
+                ),
                 rx.dialog.content(
                     rx.dialog.title(txttitledialog),
                     rx.dialog.description(
@@ -88,53 +91,36 @@ def _editrow(user: Players, action: str = "edit") -> rx.Component:
             )
 
 def _delrow(user: Players) -> rx.Component:
-    return rx.dialog.root(
-                rx.dialog.trigger(rx.button("Borrar")),
-                rx.dialog.content(
-                    rx.dialog.title("Borrar"),
-                    rx.dialog.description(
-                        rx.form(
-                            rx.vstack(
-                                rx.el.input(
-                                    type="hidden",
-                                    name="id",
-                                    value=user.id,
-                                    readonly=True
-                                ),
-                                rx.form.field(
-                                    rx.flex(
-                                        rx.form.label("name"),
-                                        rx.form.control(
-                                            rx.input(
-                                                placeholder="name",
-                                                default_value=user.Name,
-                                                required=True
-                                            ),
-                                            as_child=True,
-                                        ),
-                                        rx.form.message(
-                                            "Please enter a valid email",
-                                            match="typeMismatch",
-                                        ),
-                                        direction="column",
-                                        spacing="2",
-                                        align="stretch",
-                                    ),                          
-                                    name="name"
-                                ),
-                                rx.form.field(name="team", default_value=user.Team),
-                                rx.form.field(name="number", default_value=user.Number),
-                                rx.form.field(name="position", default_value=user.Position),
-                                rx.form.field(name="age", default_value=user.Age),
-                                rx.form.field(name="height", default_value=user.Height),
-                                rx.form.field(name="weight", default_value=user.Weight),
-                                rx.form.field(name="college", default_value=user.College),
-                                rx.form.field(name="salary", default_value=user.Salary),
-                                rx.button("Submit", type="submit"),
-                            ),
-                            on_submit=DatabaseTableState.update_player,
-                        ),
+    return rx.alert_dialog.root(
+        rx.alert_dialog.trigger(
+            rx.button(
+                rx.icon("trash-2"),    
+                color_scheme="red"),
+        ),
+        rx.alert_dialog.content(
+            rx.alert_dialog.title("Confirmar borrado"),
+            rx.alert_dialog.description(
+                "¿Estás seguro de que quieres borrar este registro? Esta acción no se puede deshacer.",
+            ),
+            rx.flex(
+                rx.alert_dialog.cancel(
+                    rx.button(
+                        "No",
+                        variant="soft",
+                        color_scheme="gray",
                     ),
-                    rx.dialog.close(rx.button("Close")),
                 ),
-            )
+                rx.alert_dialog.action(
+                    rx.button(
+                        "Sí, borrar",
+                        color_scheme="red",
+                        variant="solid",
+                        on_click=DatabaseTableState.delete_player(user.id),
+                    ),
+                ),
+                spacing="3",
+                margin_top="16px",
+                justify="end",
+            ),
+        ),
+    )

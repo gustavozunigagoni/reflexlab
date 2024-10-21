@@ -90,6 +90,14 @@ class DatabaseTableState(rx.State):
                         setattr(player, key.capitalize(), value)
                 session.commit()
         self.load_entries()
+
+    def delete_player(self, player_id: int):
+        with Session(engine) as session:
+            player = session.get(Players, player_id)
+            if player:
+                session.delete(player)
+                session.commit()
+        self.load_entries()
     
     def sort_values(self, sort_value):
         self.sort_value = sort_value
