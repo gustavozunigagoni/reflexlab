@@ -26,19 +26,32 @@ def loginreset() -> rx.Component:
                     width="100%",
                 ),
                 rx.spacer(height="1em"),
-                rx.text(
-                        "Desea que se envie un Email al usuario referido para el reset de su clave",
+                rx.vstack(
+                    rx.text(
+                        "Email",
                         size="3",
                         weight="medium",
                         text_align="left",
                         width="100%",
+                    ),
+                    rx.input(
+                        placeholder="Email de usuario para reiniciar password",
+                        type="text",
+                        size="3",
+                        width="100%",
+                        on_change=LoginState.set_emailresetpassword,
+                        value=LoginState.emailresetpassword,
+                    ),
+                    justify="start",
+                    spacing="2",
+                    width="100%",
                 ),
                 rx.spacer(height="1em"),
                 rx.button(
                     "Reinicio de Password",
                     ize="3",
                     width="100%",
-                    on_click=LoginState.login,
+                    on_click=LoginState.loginreset,
                 ),
                 rx.spacer(height="1em"),
                 rx.button(
