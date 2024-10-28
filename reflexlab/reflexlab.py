@@ -21,6 +21,7 @@ from reflexlab.pages.page12.page12 import page12
 from reflexlab.pages.form01 import form01
 from reflexlab.pages.form02 import form02
 from reflexlab.pages.login.login import login
+from reflexlab.pages.login.loginreset import loginreset
 
 from rxconfig import config
 
@@ -53,3 +54,4 @@ app.add_page(page12)
 app.add_page(form01)
 app.add_page(form02)
 app.add_page(login)
+app.add_page(loginreset)

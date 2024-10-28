@@ -34,7 +34,7 @@ def login() -> rx.Component:
                             width="100%",
                         ),
                         rx.input(
-                            placeholder="50600131",
+                            placeholder="Su login de usuario",
                             type="text",
                             size="3",
                             width="100%",
@@ -54,7 +54,7 @@ def login() -> rx.Component:
                             ),
                             rx.link(
                                 "Olvido su clave?",
-                                href="#",
+                                href="/loginreset",
                                 size="3",
                             ),
                             justify="between",
@@ -76,6 +76,19 @@ def login() -> rx.Component:
                         size="3",
                         width="100%",
                         on_click=LoginState.login,
+                    ),
+                    rx.cond(
+                        LoginState.errlogin != "",
+                        rx.hstack(
+                            rx.text(
+                                LoginState.errlogin,
+                                size="3",
+                                weight="medium",
+                                color="red"
+                            ),
+                            justify="between",
+                            width="100%",
+                        ),
                     ),
                     rx.center(
                         rx.text("Nuevo aqui?", size="3"),
