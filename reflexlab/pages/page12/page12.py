@@ -12,6 +12,13 @@ from reflexlab.pages.login.login_state import LoginState
 @rx.page(route="/page12", title="page12",on_load=LoginState.check_login)
 def page12():
     return rx.vstack(
+         rx.hstack(
+            rx.button(
+                "Logout",
+                on_click=LoginState.logout,
+            ),
+            spacing="7",
+        ),
         rx.hstack(
             rx.select(
                 ["10", "20", "30", "50"],
@@ -32,13 +39,6 @@ def page12():
             ),
         ),
         rx.hstack(
-            #rx.button(
-            #    "Download as JSON",
-            #    on_click=rx.download(
-            #        data=DatabaseTableState.get_json_data(),
-            #        filename="data.json",
-            #    ),
-            #),
             rx.button(
                 "Download as CSV",
                 on_click=DatabaseTableState.download_csv_data,

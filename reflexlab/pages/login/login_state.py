@@ -2,6 +2,7 @@ import reflex as rx
 import json
 import requests
 from reflexlab.backend.loadenv import settings
+import re
 
 class LoginState(rx.State):
     id_token_json: str = rx.LocalStorage()
@@ -9,6 +10,10 @@ class LoginState(rx.State):
     password: str = ""
     errlogin: str = ""
     emailresetpassword: str = ""
+    registry_username: str = ""
+    registry_email: str = ""
+    registry_password: str = ""
+    registry_password2: str = ""
 
     def login(self):
         try:
@@ -67,9 +72,22 @@ class LoginState(rx.State):
     def loginresetcancel(self):
         return rx.redirect("/login")
     
+    def loginregistry(self):
+        self.errlogin = ""
+        if self.registry_password != self.registry_password2:
+            self.errlogin = "El password no coincide" 
+        email_validate_pattern = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$" 
+        result = re.match(email_validate_pattern, self.registry_email)
+        print(result)
+        if result == None:
+            self.errlogin = "Formato de email erroneo"
+        if self.errlogin == "":
+                return rx.redirect("/login")
+        else:
+            return
+
     def loginreset(self):
         try:
-            print("VOOOOOYYYYY")
             response = requests.post(
                 f'{settings.keycloak_server}/realms/{settings.keycloak_realm}/protocol/openid-connect/token',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'},
@@ -101,10 +119,7 @@ class LoginState(rx.State):
                     )
                     if response.status_code == 204:
                         pass
-                    else:
-                        pass
-            else:
-                return None
+            return rx.redirect("/login")
 
         except Exception as exc:
             self.errlogin = f"Error en la autenticación: {exc}"

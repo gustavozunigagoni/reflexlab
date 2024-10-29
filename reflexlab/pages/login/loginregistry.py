@@ -1,8 +1,8 @@
 import reflex as rx
 from reflexlab.pages.login.login_state import LoginState
 
-@rx.page(route="/login", title="login")
-def login() -> rx.Component:
+@rx.page(route="/loginregistry", title="loginregistry")
+def loginregistry() -> rx.Component:
     return rx.vstack(
         rx.hstack(
             rx.card(
@@ -15,7 +15,7 @@ def login() -> rx.Component:
                             border_radius="25%",
                         ),
                         rx.heading(
-                            "Inicio de session",
+                            "Registro de usuario",
                             size="6",
                             as_="h2",
                             text_align="center",
@@ -38,8 +38,8 @@ def login() -> rx.Component:
                             type="text",
                             size="3",
                             width="100%",
-                            on_change=LoginState.set_username,
-                            value=LoginState.username,
+                            on_change=LoginState.set_registry_username,
+                            value=LoginState.registry_username,
                         ),
                         justify="start",
                         spacing="2",
@@ -48,34 +48,71 @@ def login() -> rx.Component:
                     rx.vstack(
                         rx.hstack(
                             rx.text(
-                                "Clave",
+                                "Email",
                                 size="3",
                                 weight="medium",
-                            ),
-                            rx.link(
-                                "Olvido su clave?",
-                                href="/loginreset",
-                                size="3",
                             ),
                             justify="between",
                             width="100%",
                         ),
                         rx.input(
-                            placeholder="Clave",
+                            placeholder="Email ",
+                            type="text",
+                            size="3",
+                            width="100%",
+                            on_change=LoginState.set_registry_email,
+                            value=LoginState.registry_email,
+                        ),
+                        spacing="2",
+                        width="100%",
+                    ),
+                    rx.vstack(
+                        rx.hstack(
+                            rx.text(
+                                "Password",
+                                size="3",
+                                weight="medium",
+                            ),
+                            justify="between",
+                            width="100%",
+                        ),
+                        rx.input(
+                            placeholder="Password",
                             type="password",
                             size="3",
                             width="100%",
-                            on_change=LoginState.set_password,
-                            value=LoginState.password,
+                            on_change=LoginState.set_registry_password,
+                            value=LoginState.registry_password,
+                        ),
+                        spacing="2",
+                        width="100%",
+                    ),
+                    rx.vstack(
+                        rx.hstack(
+                            rx.text(
+                                "Verificar password",
+                                size="3",
+                                weight="medium",
+                            ),
+                            justify="between",
+                            width="100%",
+                        ),
+                        rx.input(
+                            placeholder="Password",
+                            type="password",
+                            size="3",
+                            width="100%",
+                            on_change=LoginState.set_registry_password2,
+                            value=LoginState.registry_password2,
                         ),
                         spacing="2",
                         width="100%",
                     ),
                     rx.button(
-                        "Inicio session",
+                        "Registrar usuario",
                         size="3",
                         width="100%",
-                        on_click=LoginState.login,
+                        on_click=LoginState.loginregistry,
                     ),
                     rx.cond(
                         LoginState.errlogin != "",
@@ -89,13 +126,6 @@ def login() -> rx.Component:
                             justify="between",
                             width="100%",
                         ),
-                    ),
-                    rx.center(
-                        rx.text("Nuevo aqui?", size="3"),
-                        rx.link("Registro", href="/loginregistry", size="3"),
-                        opacity="0.8",
-                        spacing="2",
-                        direction="row",
                     ),
                     spacing="6",
                     width="100%",
