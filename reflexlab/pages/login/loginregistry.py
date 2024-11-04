@@ -1,7 +1,7 @@
 import reflex as rx
 from reflexlab.pages.login.login_state import LoginState
 
-@rx.page(route="/loginregistry", title="loginregistry")
+@rx.page(route="/loginregistry", title="loginregistry", on_load=LoginState.on_load)
 def loginregistry() -> rx.Component:
     return rx.vstack(
         rx.hstack(

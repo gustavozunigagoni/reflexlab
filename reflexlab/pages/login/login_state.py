@@ -15,6 +15,9 @@ class LoginState(rx.State):
     registry_password: str = ""
     registry_password2: str = ""
 
+    def on_load(self):
+        self.reset()
+
     def login(self):
         try:
             response = requests.post(
@@ -74,13 +77,22 @@ class LoginState(rx.State):
     
     def loginregistry(self):
         self.errlogin = ""
-        if self.registry_password != self.registry_password2:
-            self.errlogin = "El password no coincide" 
-        email_validate_pattern = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$" 
-        result = re.match(email_validate_pattern, self.registry_email)
+        username_validate_pattern = r'^\S+$' 
+        result= re.match(username_validate_pattern, self.registry_username)
+        print(self.registry_username)
         print(result)
         if result == None:
-            self.errlogin = "Formato de email erroneo"
+            self.errlogin = "El login de usuario es invalido" 
+        else:
+            email_validate_pattern = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$" 
+            result = re.match(email_validate_pattern, self.registry_email)
+            if result == None:
+                self.errlogin = "Formato de email erroneo"
+            else:
+                password_validate_pattern = r'^\S+$' 
+                result= re.match(password_validate_pattern, self.registry_password)
+                if (self.registry_password != self.registry_password2) or (result == None):
+                    self.errlogin = "La verificacion del password no es correcta"
         if self.errlogin == "":
                 return rx.redirect("/login")
         else:
