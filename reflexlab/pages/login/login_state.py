@@ -11,12 +11,40 @@ class LoginState(rx.State):
     errlogin: str = ""
     emailresetpassword: str = ""
     registry_username: str = ""
+    registry_firstname: str = ""
+    registry_lastname: str = ""
     registry_email: str = ""
     registry_password: str = ""
     registry_password2: str = ""
 
     def on_load(self):
         self.reset()
+
+    def gettokenaccess(self):
+        self.errlogin = ""
+        try:
+            response = requests.post(
+                f'{settings.keycloak_server}/realms/{settings.keycloak_realm}/protocol/openid-connect/token',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'},
+                data={
+                    'client_id': settings.keycloak_client_id,
+                    'client_secret': settings.keycloak_client_secret,
+                    'username': settings.admin_login_username,
+                    'password': settings.admin_login_password,
+                    'grant_type': 'password',
+                    'scope': 'openid'
+                }
+            )
+            if response.status_code == 200:
+                token_data = json.dumps(response.json())
+                token_data = json.loads(token_data)
+                aux_token = token_data["access_token"]
+                return aux_token
+            else:
+                return None
+        except Exception as exc:
+            self.errlogin = f"Error en la autenticación: {exc}"
+            return None
 
     def login(self):
         try:
@@ -32,10 +60,8 @@ class LoginState(rx.State):
                     'scope': 'openid'
                 }
             )
-            print(response.status_code)
             if response.status_code == 200:
                 self.id_token_json = json.dumps(response.json())
-                print(self.id_token_json)
                 self.errlogin = ""
                 return rx.redirect("/page12")  
             else:
@@ -77,45 +103,77 @@ class LoginState(rx.State):
     
     def loginregistry(self):
         self.errlogin = ""
-        username_validate_pattern = r'^\S+$' 
-        result= re.match(username_validate_pattern, self.registry_username)
-        print(self.registry_username)
-        print(result)
+        validate_pattern = r'^\S+$' 
+        result= re.match(validate_pattern, self.registry_username)
         if result == None:
             self.errlogin = "El login de usuario es invalido" 
         else:
-            email_validate_pattern = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$" 
-            result = re.match(email_validate_pattern, self.registry_email)
+            validate_pattern = r'^\S+$' 
+            result= re.match(validate_pattern, self.registry_firstname)
             if result == None:
-                self.errlogin = "Formato de email erroneo"
+                self.errlogin = "El nombre de usuario es invalido" 
             else:
-                password_validate_pattern = r'^\S+$' 
-                result= re.match(password_validate_pattern, self.registry_password)
-                if (self.registry_password != self.registry_password2) or (result == None):
-                    self.errlogin = "La verificacion del password no es correcta"
+                username_validate_pattern = r'^\S+$' 
+                result= re.match(validate_pattern, self.registry_lastname)
+                if result == None:
+                    self.errlogin = "El apellido de usuario es invalido" 
+                else:
+                    validate_pattern = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$" 
+                    result = re.match(validate_pattern, self.registry_email)
+                    if result == None:
+                        self.errlogin = "Formato de email erroneo"
+                    else:
+                        password_validate_pattern = r'^\S+$' 
+                        result= re.match(password_validate_pattern, self.registry_password)
+                        if (self.registry_password != self.registry_password2) or (result == None):
+                            self.errlogin = "La verificacion del password no es correcta"
         if self.errlogin == "":
+                try:
+                    aux_token = self.gettokenaccess()  
+                    if aux_token: 
+                        print("VOY10")
+                        print("VOY1")
+                        response = requests.post(
+                            f'{settings.keycloak_server}/admin/realms/{settings.keycloak_realm}/users',
+                            headers={'Authorization': f'Bearer {aux_token}','Content-Type': 'application/json'},
+                            json={
+                                "username": self.registry_username,
+                                "enabled": False,
+                                "email": self.registry_email,
+                                "firstName": self.registry_firstname,
+                                "lastName": self.registry_lastname,
+                                "credentials": [{
+                                    "type": "password",
+                                    "value": self.registry_password,
+                                    "temporary": False
+                                }]
+                            }
+                        )
+                        print("VOY2")
+                        if response.status_code == 201:
+                            
+                            self.errlogin = ""
+                            return rx.redirect("/page12")  
+                        else:
+                            print("Status Code:", response.status_code)
+                            print("Response JSON:", response.json())
+                            if response.status_code == 409:
+                                self.errlogin = "ERROR: El usuario o el email ya existen"
+                            else:    
+                                self.errlogin = "ERROR: al registrar usuario"
+                            return None
+                except Exception as exc:
+                    self.errlogin = f"Error en la autenticación: {exc}"
+
+                #####
                 return rx.redirect("/login")
         else:
             return
 
     def loginreset(self):
         try:
-            response = requests.post(
-                f'{settings.keycloak_server}/realms/{settings.keycloak_realm}/protocol/openid-connect/token',
-                headers={'Content-Type': 'application/x-www-form-urlencoded'},
-                data={
-                    'client_id': settings.keycloak_client_id,
-                    'client_secret': settings.keycloak_client_secret,
-                    'username': settings.admin_login_username,
-                    'password': settings.admin_login_password,
-                    'grant_type': 'password',
-                    'scope': 'openid'
-                }
-            )
-            if response.status_code == 200:
-                token_data = json.dumps(response.json())
-                token_data = json.loads(token_data)
-                aux_token = token_data["access_token"]
+            aux_token = self.gettokenaccess()  # Llamada corregida a self.gettokenaccess()
+            if aux_token: 
                 response = requests.get(
                     f'{settings.keycloak_server}/admin/realms/{settings.keycloak_realm}/users?email={self.emailresetpassword}',
                     headers={'Authorization': f'Bearer {aux_token}'}
@@ -135,6 +193,5 @@ class LoginState(rx.State):
 
         except Exception as exc:
             self.errlogin = f"Error en la autenticación: {exc}"
-            print(self.errlogin)
             return None
         

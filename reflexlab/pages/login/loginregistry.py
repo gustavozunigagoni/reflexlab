@@ -46,6 +46,46 @@ def loginregistry() -> rx.Component:
                         width="100%",
                     ),
                     rx.vstack(
+                        rx.text(
+                            "Nombre",
+                            size="3",
+                            weight="medium",
+                            text_align="left",
+                            width="100%",
+                        ),
+                        rx.input(
+                            placeholder="Nombre de usuario",
+                            type="text",
+                            size="3",
+                            width="100%",
+                            on_change=LoginState.set_registry_firstname,
+                            value=LoginState.registry_firstname,
+                        ),
+                        justify="start",
+                        spacing="2",
+                        width="100%",
+                    ),
+                    rx.vstack(
+                        rx.text(
+                            "Apellido",
+                            size="3",
+                            weight="medium",
+                            text_align="left",
+                            width="100%",
+                        ),
+                        rx.input(
+                            placeholder="Apellido de usuario",
+                            type="text",
+                            size="3",
+                            width="100%",
+                            on_change=LoginState.set_registry_lastname,
+                            value=LoginState.registry_lastname,
+                        ),
+                        justify="start",
+                        spacing="2",
+                        width="100%",
+                    ),
+                    rx.vstack(
                         rx.hstack(
                             rx.text(
                                 "Email",
@@ -113,6 +153,12 @@ def loginregistry() -> rx.Component:
                         size="3",
                         width="100%",
                         on_click=LoginState.loginregistry,
+                    ),
+                    rx.button(
+                        "Cancelar",
+                        size="3",
+                        width="100%",
+                        on_click=LoginState.loginresetcancel,
                     ),
                     rx.cond(
                         LoginState.errlogin != "",
