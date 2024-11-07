@@ -58,28 +58,36 @@ def page12():
                 value
             ),
         ),
-        rx.table.root(
-            rx.table.header(
-                rx.table.row(
-                    rx.table.column_header_cell("Accions", col_span=3),
-                    rx.table.column_header_cell("Name"),
-                    rx.table.column_header_cell("Team"),
-                    rx.table.column_header_cell("Number"),
-                    rx.table.column_header_cell("Position"),
-                    rx.table.column_header_cell("Age"),
-                    rx.table.column_header_cell("Height"),
-                    rx.table.column_header_cell("Weight"),
-                    rx.table.column_header_cell("College"),
-                    rx.table.column_header_cell("Salary"),
-                    rx.table.column_header_cell("id"),
+        rx.scroll_area(
+            rx.flex(
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            rx.table.column_header_cell("Accions", col_span=3),
+                            rx.table.column_header_cell("Name"),
+                            rx.table.column_header_cell("Team"),
+                            rx.table.column_header_cell("Number"),
+                            rx.table.column_header_cell("Position"),
+                            rx.table.column_header_cell("Age"),
+                            rx.table.column_header_cell("Height"),
+                            rx.table.column_header_cell("Weight"),
+                            rx.table.column_header_cell("College"),
+                            rx.table.column_header_cell("Salary"),
+                            rx.table.column_header_cell("id"),
+                        ),
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            DatabaseTableState.users, show_player
+                        )
+                    ),
+                    on_mount=DatabaseTableState.load_entries,
+                    width="100%",
                 ),
+                style={"width": 800},
             ),
-            rx.table.body(
-                rx.foreach(
-                    DatabaseTableState.users, show_player
-                )
-            ),
-            on_mount=DatabaseTableState.load_entries,
-            width="100%",
-        ),
+            type="always",
+            scrollbars="both",
+            style={"height": 700},
+        )
     )

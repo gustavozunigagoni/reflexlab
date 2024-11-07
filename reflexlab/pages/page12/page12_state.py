@@ -16,6 +16,8 @@ class DatabaseTableState(rx.State):
     search_value = ""
 
     total_items: int
+    bol_offset: bool = True
+
     offset: int = 0
     limit: int = 10
 
@@ -40,6 +42,7 @@ class DatabaseTableState(rx.State):
 
     @rx.var(cache=True)
     def total_pages(self) -> int:
+        print(f"VOOOYYYYYY  {self.total_items }")
         return self.total_items // self.limit + (
             1 if self.total_items % self.limit else 0
         )
@@ -54,10 +57,18 @@ class DatabaseTableState(rx.State):
         self.load_entries()
 
     def _get_total_items(self, session):
-        """Return the total number of items in the Customer table."""
-        self.total_items = session.exec(
-            select(func.count(Players.id))
-        ).one()
+        query = select(func.count(Players.id))
+    
+        if self.search_value != "":
+            search_value = f"%{self.search_value.lower()}%"
+            query = query.where(
+                or_(
+                    Players.Name.ilike(search_value),
+                    Players.Team.ilike(search_value),
+                    Players.Position.ilike(search_value),
+                )
+        )
+        self.total_items = session.exec(query).one()
 
     def load_entries(self) -> list[Players]:
         """Get all users from the database."""
@@ -65,6 +76,9 @@ class DatabaseTableState(rx.State):
             query = select(Players)
 
             if self.search_value != "":
+                if self.bol_offset:
+                    self.offset: int = 0 
+                    self.bol_offset = False
                 search_value = f"%{self.search_value.lower()}%"
                 query = query.where(
                     or_(
@@ -73,6 +87,8 @@ class DatabaseTableState(rx.State):
                         Players.Position.ilike(search_value),
                     )
                 )
+            else:
+                self.bol_offset = True
 
             # Siempre incluir una cláusula ORDER BY
             if self.sort_value != "":
@@ -88,6 +104,7 @@ class DatabaseTableState(rx.State):
 
             self.users = session.exec(query).all()
             self._get_total_items(session)
+        
     
     def update_player(self, form_data: dict):
         with Session(engine) as session:
