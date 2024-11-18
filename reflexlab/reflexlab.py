@@ -24,6 +24,7 @@ from reflexlab.pages.login.login import login
 from reflexlab.pages.login.loginreset import loginreset
 from reflexlab.pages.login.loginregistry import loginregistry
 from reflexlab.pages.page13 import page13
+from reflexlab.pages.page14 import page14
 
 from rxconfig import config
 
@@ -59,3 +60,4 @@ app.add_page(login)
 app.add_page(loginreset)
 app.add_page(loginregistry)
 app.add_page(page13)
+app.add_page(page14)

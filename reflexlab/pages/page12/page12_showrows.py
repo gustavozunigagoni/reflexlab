@@ -8,10 +8,10 @@ def show_player(user: Players):
     """Show a Players in a table row."""
     return rx.table.row(
         rx.table.cell(
-            _editrow(user,"edit"),
+            editrow(user,"edit"),
         ),
         rx.table.cell(
-            _editrow(user,"add"),
+            editrow(user,"add"),
         ),
         rx.table.cell(
             _delrow(user),
@@ -28,7 +28,7 @@ def show_player(user: Players):
         rx.table.cell(user.id),
     )
 
-def _editrow(user: Players, action: str = "edit") -> rx.Component:
+def editrow(user: Players, action: str = "edit") -> rx.Component:
     if action == "edit":
         txtbtndialog= "pencil"
         txttitledialog= "Ediat Player"

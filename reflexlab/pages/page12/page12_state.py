@@ -23,6 +23,9 @@ class DatabaseTableState(rx.State):
 
     error_message: str = ""
 
+    def on_load(self):
+        self.reset()
+
     @rx.var
     def has_error(self) -> bool:
         return self.error_message != ""

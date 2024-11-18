@@ -5,11 +5,11 @@ import json
 from sqlmodel import select,Field, Session, create_engine, asc, or_, func, SQLModel
 from reflexlab.pages.page12.page12_model import Players
 from reflexlab.pages.page12.page12_state import DatabaseTableState
-from reflexlab.pages.page12.page12_showrows import show_player
+from reflexlab.pages.page12.page12_showrows import show_player, editrow
 from reflexlab.pages.login.login_state import LoginState
 
 
-@rx.page(route="/page12", title="page12",on_load=LoginState.check_login)
+@rx.page(route="/page12", title="page12",on_load=LoginState.check_login )
 def page12():
     return rx.vstack(
          rx.hstack(
