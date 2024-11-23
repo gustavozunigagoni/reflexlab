@@ -46,8 +46,11 @@ class LoginState(rx.State):
             self.errlogin = f"Error en la autenticación: {exc}"
             return None
 
-    def login(self):
+    @rx.event
+    def login(self, form_data: dict):
         try:
+            self.username= form_data["username"],  # Get from form_data
+            self.password= form_data["password"],  # Get from form_data
             response = requests.post(
                 f'{settings.keycloak_server}/realms/{settings.keycloak_realm}/protocol/openid-connect/token',
                 headers={'Content-Type': 'application/x-www-form-urlencoded'},
@@ -61,6 +64,8 @@ class LoginState(rx.State):
                 }
             )
             if response.status_code == 200:
+                self.username = ''
+                self.password = ''
                 self.id_token_json = json.dumps(response.json())
                 self.errlogin = ""
                 return rx.redirect("/page12")  
