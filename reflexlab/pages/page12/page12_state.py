@@ -108,7 +108,31 @@ class DatabaseTableState(rx.State):
             self.users = session.exec(query).all()
             self._get_total_items(session)
         
-    
+    def add_player(self, form_data: dict):
+        with Session(engine) as session:
+            try:
+                new_name = form_data.get("name", "").strip()
+                if re.match(r'^\s*$', new_name):
+                    self.error_message = "Error: El campo nombre no puede estar vacío o contener solo espacios."
+                else:
+                    existing_player = session.exec(
+                        select(Players).where(Players.Name == new_name)
+                    ).first()
+                    if existing_player:
+                        self.error_message = f"Error: Ya existe un jugador con el nombre '{new_name}'."
+                    else:
+                        new_player = Players()
+                        for key, value in form_data.items():
+                            if key != "id":  # Ignoramos el id ya que es autogenerado
+                                setattr(new_player, key.capitalize(), value)
+                        session.add(new_player)
+                        session.commit()
+                        self.load_entries()
+                        self.error_message = ""
+            except IntegrityError as e:
+                session.rollback()
+                self.error_message = f"Error de base de datos: {str(e)}"
+                
     def update_player(self, form_data: dict):
         with Session(engine) as session:
             try:

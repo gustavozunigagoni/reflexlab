@@ -5,7 +5,8 @@ import json
 from sqlmodel import select,Field, Session, create_engine, asc, or_, func, SQLModel
 from reflexlab.pages.page12.page12_model import Players
 from reflexlab.pages.page12.page12_state import DatabaseTableState
-from reflexlab.pages.page12.page12_showrows import show_player, editrow
+from reflexlab.pages.page12.page12_showrows import show_player
+from reflexlab.pages.page12.page12_addeditrow import addeditrow
 from reflexlab.pages.login.login_state import LoginState
 
 
@@ -58,6 +59,7 @@ def page12():
                 value
             ),
         ),
+        addeditrow(action='add'),
         rx.scroll_area(
             rx.flex(
                 rx.table.root(
